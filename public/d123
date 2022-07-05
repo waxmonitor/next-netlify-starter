@@ -1,0 +1,297 @@
+<html>
+<title>WAX-monitor</title>
+
+<style>
+	body {
+		font-family: "Roboto", sans-serif;
+		background-color: #373737;
+		color: #ffffff;
+	}
+
+	input {
+		background-color: #616161;
+		color: #ffffff;
+	}
+
+	textarea {
+		background-color: #616161;
+		color: #ffffff;
+		font-family: "Roboto", sans-serif;
+		font-size: small;
+	}
+
+
+	.wax-acc {
+		display: block;
+		text-align: center;
+		margin: 0 auto;
+		color: black;
+	}
+
+
+	.WAX,
+	.WAX-staked,
+	.CPU,
+	.RAM {
+		color: black;
+		display: block;
+		text-align: right;
+		margin: 0 auto;
+	}
+
+	.inventory1,
+	.inventory2,
+	.inventory3 {
+		max-width: 490px;
+	}
+
+	td {
+		background-color: #8e8e8e;
+	}
+
+	th {
+		max-width: 500px;
+	}
+
+	a {
+		color: #1a237e;
+	}
+
+	div {
+		margin-left: 20px;
+		float: left;
+		max-width: 490px;
+	}
+
+	hr {
+		clear: both;
+	}
+</style>
+
+<body>
+	<label for="RPC">Choose RPC:</label>
+
+	<select name="RPC" id="RPC" onchange="RPCUpdate(this.value)">
+		  <option value="https://chain.wax.io">https://chain.wax.io</option>
+		  <option value="https://api.wax.alohaeos.com">https://api.wax.alohaeos.com</option>
+		  <option value="https://nftgaming.global.binfra.one">https://nftgaming.global.binfra.one</option>
+		  <option value="https://wax.pink.gg">https://wax.pink.gg</option>
+		  <option value="https://api.waxsweden.org">https://api.waxsweden.org</option>
+		  <option value="https://wax.greymass.com">https://wax.greymass.com</option>
+		  <option value="https://wax.dapplica.io">https://wax.dapplica.io</option>
+		  <option value="https://apiwax.3dkrender.com">https://apiwax.3dkrender.com</option>
+		  <option value="https://api-wax.eosauthority.com]">https://api-wax.eosauthority.com</option>
+	</select><br>
+	<p><strong>Tools to check your CPU, RAM, WAX, and Last 3 items.</strong></p>
+
+	<div> Input WAX address: &nbsp;&nbsp;<button id="wax-to-table" onclick=waxToTable()>Update to Table</button><br>
+		<textarea id="wax-bulk" rows="3" cols="50" placeholder="wax1, wax2,wax3"></textarea><br><br>
+	</div>
+	<hr />
+	<div>Actions:
+		<button id="auto-button" onclick=autoCheck()>Auto Refresh</button>&nbsp;&nbsp;<button id="manual-button"
+			onclick=manualCheck()>Manual Refresh</button><br>
+	</div><br style="line-height: 20px" />
+	<hr />
+	<table id="my-table" border="1" cellpadding="1" cellspacing="1" style="width:100%">
+		<thead>
+			<tr>
+				<th scope="col" style="background-color:#777777; height:50px; width:3%"><strong>WAX
+						Address</strong></th>
+				<th scope="col" style="background-color:#777777; height:50px; width:2%"><strong>CPU</strong>
+				</th>
+				<th scope="col" style="background-color:#777777; height:50px; width:2%"><strong>RAM</strong>
+				</th>
+				<th scope="col" style="background-color:#777777; height:50px; width:3%"><strong>WAX Staked</strong>
+				</th>
+				<th scope="col" style="background-color:#777777; height:50px; width:3%"><strong>WAX</strong></th>
+				<th scope="col" style="background-color:#777777; height:50px; width:15%"><strong>Inventory#1</strong>
+				<th scope="col" style="background-color:#777777; height:50px; width:15%"><strong>Inventory#2</strong>
+				<th scope="col" style="background-color:#777777; height:50px; width:15%"><strong>Inventory#3</strong>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td id="test1" style="background-color:#8e8e8e; width:155px"><span class="wax-acc">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:50px"><span class="CPU">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:50px"><span class="RAM">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:126px"><span class="WAX-staked">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:126px"><span class="WAX">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:386px"><span class="inventory1">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:386px"><span class="inventory2">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; width:386px"><span class="inventory3">&nbsp;</span></td>
+			</tr>
+		</tbody>
+	</table>
+
+</body>
+
+<script>
+	let messageContent;
+	let waxAddress;
+	let response;
+	let waxDomain = "https://chain.wax.io"
+	let waxAcc;
+
+	function RPCUpdate(RPC){
+		waxDomain = RPC;
+	}
+
+	function waxToTable() {
+		console.log("initiate ");
+		if (document.getElementById('wax-bulk').value == "") {
+			alert('Fill-up the wax address correctly!');
+		} else {
+			waxAddress = document.getElementById('wax-bulk').value.split(",");
+			for (let i = 0; i < waxAddress.length; i++) {
+				if (waxAddress.length > document.querySelectorAll('.wax-acc').length) {
+					var table = document.getElementById("my-table");
+					var row = table.insertRow(-1);
+					var cell1 = row.insertCell(0);
+					var cell2 = row.insertCell(1);
+					var cell3 = row.insertCell(2);
+					var cell4 = row.insertCell(3);
+					var cell5 = row.insertCell(4);
+					var cell6 = row.insertCell(5);
+					var cell7 = row.insertCell(6);
+					var cell8 = row.insertCell(7);
+					cell1.innerHTML = "<span class='wax-acc'>&nbsp;</span>";
+					cell2.innerHTML = "<span class='CPU'>&nbsp;</span>";
+					cell3.innerHTML = "<span class='RAM'>&nbsp;</span>";
+					cell4.innerHTML = "<span class='WAX-staked'>&nbsp;</span>";
+					cell5.innerHTML = "<span class='WAX'>&nbsp;</span>";
+					cell6.innerHTML = "<span class='inventory1'>&nbsp;</span>";
+					cell7.innerHTML = "<span class='inventory2'>&nbsp;</span>";
+					cell8.innerHTML = "<span class='inventory3'>&nbsp;</span>";
+				}
+			}
+			if (waxAddress.length < document.querySelectorAll('.wax-acc').length) {
+				var table = document.getElementById("my-table");
+				while (waxAddress.length != document.querySelectorAll('.wax-acc').length) {
+					console.log("running");
+					table.deleteRow(waxAddress.length);
+				}
+			}
+			for (let i = 0; i < waxAddress.length; i++) {
+				waxAddress[i] = waxAddress[i].trim().toLowerCase();
+				document.querySelectorAll('.wax-acc')[i].innerHTML = "<a target='_blank' href='https://wax.atomichub.io/profile/" + waxAddress[i] + "#inventory'" + ">" + waxAddress[i] + "</a>";
+			}
+		}
+	}
+
+
+
+	function initiate() {
+		console.log("starting... ");
+		if (document.getElementById('wax-bulk').value == "") {
+		} else {
+			waxAddress = document.getElementById('wax-bulk').value.split(",");
+			for (let i = 0; i < waxAddress.length; i++) {
+				if (waxAddress.length > document.querySelectorAll('.wax-acc').length) {
+					var table = document.getElementById("my-table");
+					var row = table.insertRow(-1);
+					var cell1 = row.insertCell(0);
+					var cell2 = row.insertCell(1);
+					var cell3 = row.insertCell(2);
+					var cell4 = row.insertCell(3);
+					var cell5 = row.insertCell(4);
+					var cell6 = row.insertCell(5);
+					var cell7 = row.insertCell(6);
+					var cell8 = row.insertCell(7);
+					cell1.innerHTML = "<span class='wax-acc'>&nbsp;</span>";
+					cell2.innerHTML = "<span class='CPU'>&nbsp;</span>";
+					cell3.innerHTML = "<span class='RAM'>&nbsp;</span>";
+					cell4.innerHTML = "<span class='WAX-staked'>&nbsp;</span>";
+					cell5.innerHTML = "<span class='WAX'>&nbsp;</span>";
+					cell6.innerHTML = "<span class='inventory1'>&nbsp;</span>";
+					cell7.innerHTML = "<span class='inventory2'>&nbsp;</span>";
+					cell8.innerHTML = "<span class='inventory3'>&nbsp;</span>";
+				}
+				waxAddress[i] = waxAddress[i].trim().toLowerCase();
+				document.querySelectorAll('.wax-acc')[i].innerHTML = "<a target='_blank' href='https://neftyblocks.com/profile/" + waxAddress[i] + "/collected'" + ">" + waxAddress[i] + "</a>";
+			}
+		}
+	}
+
+	initiate();
+
+	function manualCheck() {
+		for (let i = 0; i < waxAddress.length; i++) {
+			messageContent = {
+				"account_name": waxAddress[i].trim(),
+			};
+			try {
+				fetch(waxDomain + '/v1/chain/get_account', {
+					method: "post",
+					body: JSON.stringify(messageContent),
+					headers: {
+						'Accept': 'application/json',
+					}
+				})
+					.then(response => response.json())
+					.then(async result => {
+						let CPU = (parseInt(result["cpu_limit"]["used"] / result["cpu_limit"]["max"] * 100) >=0) ? parseInt(result["cpu_limit"]["used"] / result["cpu_limit"]["max"] * 100) : "Err";
+						let RAM = (parseInt(result["ram_usage"] / result["ram_quota"] * 100) >=0) ? parseInt(result["ram_usage"] / result["ram_quota"] * 100) : "Err";
+						document.querySelectorAll('.CPU')[i].innerHTML = CPU + "%";
+						document.querySelectorAll('.RAM')[i].innerHTML = RAM + "%";
+						document.querySelectorAll('.WAX-Staked')[i].innerHTML = parseFloat(result["total_resources"]["cpu_weight"].split(" ")[0]).toFixed(2);
+						document.querySelectorAll('.WAX')[i].innerHTML = parseFloat(result["core_liquid_balance"].split(" ")[0]).toFixed(2);
+						changeColor("span", ".CPU", i, CPU);
+						changeColor("span", ".RAM", i, RAM);
+					}
+					)
+					.catch(error => {
+						console.error('Error:', error);
+					});
+			} catch (e) {
+				console.log(e.message);
+			}
+			try {
+				inventoryCheck(i);
+			} catch (e) {
+				console.log("Inventory: ", e.message);
+			}
+		}
+	}
+
+	function inventoryCheck(z) {
+		fetch("https://wax.api.atomicassets.io" + '/atomicassets/v1/assets?owner=' + waxAddress[z].trim() + '&page=1&limit=3&order=desc&sort=transferred')
+
+			.then((response) => {
+				return response.json();
+			})
+			.then(result => {
+				for (let i = 0; i < result["data"].length; i++) {
+					let collectionName = result["data"][i]["collection"]["collection_name"];
+					let NFTname = result["data"][i]["name"];
+					let mint = result["data"][i]["template_mint"] || "-";
+					let assetID = result["data"][i]["asset_id"];
+					let textSelect = '.inventory' + (i + 1);
+					document.querySelectorAll(textSelect)[z].innerHTML = "<a target='_blank' href=https://neftyblocks.com/assets/" + assetID + ">" + collectionName + "; " + NFTname + "; #" + mint + "</a>";
+				}
+			}
+			)
+			.catch(error => {
+				console.error('Error:', error);
+			});
+
+	}
+
+	function autoCheck() {
+		document.getElementById('auto-button').disabled = true;
+		manualCheck();
+		var run = setInterval(manualCheck, 120000);
+	}
+
+	function changeColor(type, classSelect, num, val) {
+		var color = "#8e8e8e";
+
+		if (val >= 90) {
+			color = "red";
+		}
+		document.querySelectorAll(classSelect)[num].parentElement.style.backgroundColor = color;
+	}
+</script>
+
+</html>
