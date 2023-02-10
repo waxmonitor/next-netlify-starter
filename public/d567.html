@@ -1,0 +1,513 @@
+<html>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+<link rel="stylesheet" href="style.css">
+
+
+
+<title>WAX Monitor</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<style>
+	body {
+		font-family: "Roboto Mono", sans-serif;
+		background-color: #373737;
+		color: #ffffff;
+	}
+
+
+	.loader {
+		border: 10px solid #f3f3f3;
+		border-radius: 50%;
+		border-top: 10px solid #616161;
+		width: 5px;
+		height: 5px;
+		-webkit-animation: spin 2s linear infinite;
+		/* Safari */
+		animation: spin 2s linear infinite;
+	}
+	div.loader {
+		float: right;
+	}
+
+	/* Safari */
+	@-webkit-keyframes spin {
+		0% {
+			-webkit-transform: rotate(0deg);
+		}
+
+		100% {
+			-webkit-transform: rotate(360deg);
+		}
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+
+
+
+	input {
+		background-color: #616161;
+		color: #ffffff;
+	}
+
+	textarea {
+		background-color: #616161;
+		color: #ffffff;
+		font-family: "Roboto", sans-serif;
+		font-size: small;
+	}
+
+
+	.wax-acc,
+	.wax-initial {
+		display: block;
+		text-align: center;
+		margin: 0 auto;
+		color: black;
+	}
+
+
+	.WAX,
+	.WAX-staked,
+	.CPU,
+	.RAM {
+		color: black;
+		display: block;
+		text-align: right;
+		margin: 0 auto;
+	}
+
+	.inventory1,
+	.inventory2,
+	.inventory3 {
+		max-width: 490px;
+	}
+
+	td {
+		background-color: #8e8e8e;
+	}
+
+	th {
+		max-width: 500px;
+	}
+
+	a {
+		color: #1a237e;
+	}
+
+	div {
+		margin-left: 20px;
+		float: left;
+		max-width: 490px;
+	}
+
+	hr {
+		clear: both;
+	}
+</style>
+
+<body>
+	<header>
+		<div class="header-1" onclick="location.href = 'transfer'">
+			Transfer NFT
+		</div>
+		<div class="header-2" onclick="location.href = 'transferwax'">
+			Transfer WAX
+		</div>
+		<div class="header-3" onclick="location.href = 'waxtor'">
+			Waxtor
+		</div>
+		<div class="header-4" onclick="location.href = 'anynet'">
+			Waxnet
+		</div>
+		<div class="header-5" onclick="location.href = 'unboxdebug'">
+			Unbox (Beta)
+		</div>
+		<div class="donate" onclick="location.href = 'transferwax?name=gowyi.wam&amount=25'">
+			Donate
+		</div>
+		<div class="dark-mode" onclick="darkMode()">
+			Dark Mode: 💡
+		</div>
+	</header>
+
+	<label for="RPC">Choose RPC:</label>
+
+	<select name="RPC" id="RPC" onchange="RPCUpdate(this.value)">
+		  <option value="https://wax.pink.gg">https://wax.pink.gg</option>
+		  <option value="https://chain.wax.io">https://chain.wax.io</option>
+		  <option value="https://api.wax.alohaeos.com">https://api.wax.alohaeos.com</option>
+		  <option value="https://nftgaming.global.binfra.one">https://nftgaming.global.binfra.one</option>
+		  <option value="https://api.waxsweden.org">https://api.waxsweden.org</option>
+		  <option value="https://wax.greymass.com">https://wax.greymass.com</option>
+		  <option value="https://wax.dapplica.io">https://wax.dapplica.io</option>
+		  <option value="https://apiwax.3dkrender.com">https://apiwax.3dkrender.com</option>
+		  <option value="https://api-wax.eosauthority.com]">https://api-wax.eosauthority.com</option>
+	</select><br>
+	<label for="market">Choose Market:</label>
+
+	<select name="market" id="market" onchange="updateInventory(this.value)">
+		  <option value="Nefty">Neftyblocks</option>
+		  <option value="AH">AtomicHub</option>
+	</select>
+
+	<p><strong>Tools to check your CPU, RAM, WAX, and Last 3 items.</strong></p>
+
+	<div> Input WAX address: &nbsp;&nbsp;<button id="wax-to-table" onclick=waxToTable()>Update to Table</button><br>
+		<textarea id="wax-bulk" rows="3" cols="50" placeholder="wax1, wax2,wax3"></textarea><br>
+		<!-- <button id = "save-address" onclick="saveAddress">Save Address</button> -->
+		<!-- <button id = "clear-address">Save Address</button> -->
+		<br><br>
+	</div>
+	<!--
+	<div>Input Initials: &nbsp;&nbsp;
+		<button id="wax-to-table" onclick=accToTable()>Add Initial</button><br>
+		<textarea id="acc-bulk" rows="3" cols="50" placeholder="acc1, acc2,acc3"></textarea><br>
+	</div>
+	-->
+	<hr />
+	<div>Actions:
+		<button id="auto-button" onclick=autoCheck()>Auto Refresh</button>&nbsp;&nbsp;<button id="manual-button"
+			onclick=manualCheck()>Manual Refresh</button><div id="loader"></div><br>
+	</div><br style="line-height: 24px" />
+	<hr />
+	<table id="my-table" border="1" cellpadding="1" cellspacing="1" style="width:100%">
+		<thead>
+			<tr>
+				<th scope="col" style="background-color:#424242; height:50px; width:3%"><strong>#</strong>
+				</th>
+				<th scope="col" style="background-color:#424242; height:50px; width:3%"><strong>WAX Address</strong>
+				</th>
+				<th scope="col" style="background-color:#424242; height:50px; width:2%"><strong>CPU</strong></th>
+				<th scope="col" style="background-color:#424242; height:50px; width:2%"><strong>RAM</strong></th>
+				<th scope="col" style="background-color:#424242; height:50px; width:3%"><strong>WAX Staked</strong></th>
+				<th scope="col" style="background-color:#424242; height:50px; width:3%"><strong>WAX</strong></th>
+				<th scope="col" style="background-color:#424242; height:50px; width:25%"><strong>Inventory#1</strong>
+				<th scope="col" style="background-color:#424242; height:50px; width:25%"><strong>Inventory#2</strong>
+				<th scope="col" style="background-color:#424242; height:50px; width:25%"><strong>Inventory#3</strong>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td id="test1" style="background-color:#8e8e8e"><span class="wax-initial">&nbsp;</span></td>
+				<td id="test1" style="background-color:#8e8e8e"><span class="wax-acc">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="CPU">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="RAM">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="WAX-staked">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="WAX">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="inventory1">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="inventory2">&nbsp;</span></td>
+				<td style="background-color:#8e8e8e; "><span class="inventory3">&nbsp;</span></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p>&nbsp;</p>
+	
+</body>
+
+<script>
+
+	let messageContent;
+	let waxAddress;
+	let response;
+	let waxDomain = document.getElementById('RPC').value || "https://chain.wax.io";
+	let waxAcc;
+	document.addEventListener('DOMContentLoaded', function () {
+		RPCUpdate(document.querySelector('#RPC').value)
+		document.getElementById('wax-bulk').value = localStorage.getItem("wax-bulk") || "";
+		if (document.querySelector('#wax-bulk').value != "") {
+			initiate()
+			waxToTable();
+			manualCheck();
+		}
+
+	}, false);
+	function waxToTable() {
+		console.log("initiate ");
+		if (document.getElementById('wax-bulk').value == "") {
+			alert('Fill-up the wax address correctly!');
+		} else {
+			waxAddress = document.getElementById('wax-bulk').value.split(",");
+			saveAddress()
+			for (let i = 0; i < waxAddress.length; i++) {
+				if (waxAddress.length > document.querySelectorAll('.wax-acc').length) {
+					var table = document.getElementById("my-table");
+					var row = table.insertRow(-1);
+					var cell1 = row.insertCell(0);
+					var cell2 = row.insertCell(1);
+					var cell3 = row.insertCell(2);
+					var cell4 = row.insertCell(3);
+					var cell5 = row.insertCell(4);
+					var cell6 = row.insertCell(5);
+					var cell7 = row.insertCell(6);
+					var cell8 = row.insertCell(7);
+					var cell9 = row.insertCell(8);
+					cell1.innerHTML = "<span class='wax-initial'>&nbsp;</span>";
+					cell2.innerHTML = "<span class='wax-acc'>&nbsp;</span>";
+					cell3.innerHTML = "<span class='CPU'>&nbsp;</span>";
+					cell4.innerHTML = "<span class='RAM'>&nbsp;</span>";
+					cell5.innerHTML = "<span class='WAX-staked'>&nbsp;</span>";
+					cell6.innerHTML = "<span class='WAX'>&nbsp;</span>";
+					cell7.innerHTML = "<span class='inventory1'>&nbsp;</span>";
+					cell8.innerHTML = "<span class='inventory2'>&nbsp;</span>";
+					cell9.innerHTML = "<span class='inventory3'>&nbsp;</span>";
+				}
+			}
+			if (waxAddress.length < document.querySelectorAll('.wax-acc').length) {
+				var table = document.getElementById("my-table");
+				while (waxAddress.length != document.querySelectorAll('.wax-acc').length) {
+					console.log("running");
+					table.deleteRow(waxAddress.length);
+				}
+			}
+			for (let i = 0; i < waxAddress.length; i++) {
+				waxAddress[i] = waxAddress[i].trim().toLowerCase();
+				document.querySelectorAll('.wax-acc')[i].innerHTML = "<a target='_blank' href='https://wax.atomichub.io/profile/" + waxAddress[i] + "#inventory'" + ">" + waxAddress[i] + "</a>";
+			}
+			accToTable();
+		}
+	}
+
+	function accToTable() {
+		//console.log("initiate ");
+		if (document.getElementById('acc-bulk')) {
+			if (document.getElementById('acc-bulk').value == "") {
+				//alert('Fill-up the initial address correctly!');
+				if (document.querySelectorAll('th').length == 9) {
+					//document.getElementById("my-table").tHead.children[0].insertCell(0).outerHTML = "<th scope='col' style='background-color:#424242; width:5%' ><strong>Initial</strong></th>";
+				}
+				//if (document.querySelectorAll('.wax-initial').length < document.querySelectorAll('tr').length - 1) {
+				if (document.querySelectorAll('.wax-initial').length < document.querySelectorAll('tr').length - 1) {
+					for (let i = 0; i < document.querySelectorAll('tr').length - 1; i++) {
+						var x = document.querySelectorAll('tr')[parseInt(i) + 1].insertCell(0);
+						x.innerHTML = "<td style='background-color:#616161;'><span><a href='https://wax.bloks.io/account/'" + document.querySelectorAll('.wax-acc')[i] + ">" + "class='wax-p'> $" + (i + 1) + "</a></span></td>"
+					}
+				} else {
+					for (let i = 0; i < document.querySelectorAll('tr').length - 1; i++) {
+						document.querySelectorAll('.wax-initial')[i].innerHTML = "#" + (i + 1);
+					}
+				}
+			} else {
+				waxAcc = document.getElementById('acc-bulk').value.split(",");
+				if (document.querySelectorAll('th').length == 9) {
+					//document.getElementById("my-table").tHead.children[0].insertCell(0).outerHTML = "<th scope='col' style='background-color:#424242; width:5%' ><strong>Initial</strong></th>";
+				}
+				if (document.querySelectorAll('.wax-initial').length < document.querySelectorAll('tr').length - 1) {
+					for (let i = 0; i < document.querySelectorAll('tr').length - 1; i++) {
+						var x = document.querySelectorAll('tr')[parseInt(i) + 1].insertCell(0);
+						x.innerHTML = "<td style='background-color:#616161;'><span><a href='google.com' class='wax-p'> ^" + (waxAcc[i] || ("#" + (i + 1))) + "</a></span></td>"
+					}
+				} else {
+					for (let i = 0; i < document.querySelectorAll('tr').length - 1; i++) {
+						document.querySelectorAll('.wax-initial')[i].innerHTML = waxAcc[i] || ("#" + (i + 1));
+					}
+				}
+			}
+		} else {
+			if (document.querySelectorAll('th').length == 9) {
+				//document.getElementById("my-table").tHead.children[0].insertCell(0).outerHTML = "<th scope='col' style='background-color:#424242; width:5%' ><strong>Initial</strong></th>";
+			}
+			//if (document.querySelectorAll('.wax-initial').length < document.querySelectorAll('tr').length - 1) {
+			if (document.querySelectorAll('.wax-initial').length < document.querySelectorAll('tr').length - 1) {
+				for (let i = 0; i < document.querySelectorAll('tr').length - 1; i++) {
+					var x = document.querySelectorAll('tr')[parseInt(i) + 1].insertCell(0);
+					x.innerHTML = "<td style='background-color:#616161;'><span><a href='google.com' class='wax-p'> @" + (i + 1) + "</a></span></td>"
+				}
+			} else {
+				for (let i = 0; i < document.querySelectorAll('tr').length - 1; i++) {
+					document.querySelectorAll('.wax-initial')[i].innerHTML = "<a href='https://wax.bloks.io/account/" + document.querySelectorAll('.wax-acc')[i].childNodes[0].innerHTML + "' class='wax-p'> $" + (i + 1) + "</a>";
+				}
+			}
+		}
+
+	}
+
+	function initiate() {
+		console.log("starting... ");
+		if (document.getElementById('wax-bulk').value == "") {
+		} else {
+			waxAddress = document.getElementById('wax-bulk').value.split(",");
+			for (let i = 0; i < waxAddress.length; i++) {
+				if (waxAddress.length > document.querySelectorAll('.wax-acc').length) {
+					var table = document.getElementById("my-table");
+					var row = table.insertRow(-1);
+					var cell1 = row.insertCell(0);
+					var cell2 = row.insertCell(1);
+					var cell3 = row.insertCell(2);
+					var cell4 = row.insertCell(3);
+					var cell5 = row.insertCell(4);
+					var cell6 = row.insertCell(5);
+					var cell7 = row.insertCell(6);
+					var cell8 = row.insertCell(7);
+					var cell9 = row.insertCell(8);
+					cell1.innerHTML = "<span class='wax-initial'>&nbsp;</span>";
+					cell2.innerHTML = "<span class='wax-acc'>&nbsp;</span>";
+					cell3.innerHTML = "<span class='CPU'>&nbsp;</span>";
+					cell4.innerHTML = "<span class='RAM'>&nbsp;</span>";
+					cell5.innerHTML = "<span class='WAX-staked'>&nbsp;</span>";
+					cell6.innerHTML = "<span class='WAX'>&nbsp;</span>";
+					cell7.innerHTML = "<span class='inventory1'>&nbsp;</span>";
+					cell8.innerHTML = "<span class='inventory2'>&nbsp;</span>";
+					cell9.innerHTML = "<span class='inventory3'>&nbsp;</span>";
+				}
+
+				waxAddress[i] = waxAddress[i].trim().toLowerCase();
+				document.querySelectorAll('.wax-acc')[i].innerHTML = "<a target='_blank' href='https://wax.atomichub.io/profile/" + waxAddress[i] + "#inventory'" + ">" + waxAddress[i] + "</a>";
+			}
+		}
+	}
+
+
+	async function manualCheck() {
+		document.getElementById('manual-button').disabled = true;
+				setTimeout(function () {
+					document.getElementById("manual-button").disabled = false;
+				}, 5000);
+		document.getElementById('loader').classList.add('loader');
+		for (let i = 0; i < waxAddress.length; i++) {
+			await waitFor(0.75);
+			messageContent = {
+				"account_name": waxAddress[i].trim(),
+			};
+			try {
+				fetch(waxDomain + '/v1/chain/get_account', {
+					method: "post",
+					body: JSON.stringify(messageContent),
+					headers: {
+						'Accept': 'application/json',
+					}
+				})
+					.then(response => response.json())
+					.then(async result => {
+						let CPU = (parseInt(result["cpu_limit"]["used"] / result["cpu_limit"]["max"] * 100) >= 0) ? parseInt(result["cpu_limit"]["used"] / result["cpu_limit"]["max"] * 100) : "Err";
+						let RAM = (parseInt(result["ram_usage"] / result["ram_quota"] * 100) >= 0) ? parseInt(result["ram_usage"] / result["ram_quota"] * 100) : "Err";
+						document.querySelectorAll('.CPU')[i].innerHTML = CPU + "%";
+						document.querySelectorAll('.RAM')[i].innerHTML = RAM + "%";
+						document.querySelectorAll('.WAX-Staked')[i].innerHTML = parseFloat(result["total_resources"]["cpu_weight"].split(" ")[0]).toFixed(2);
+						//document.querySelectorAll('.WAX')[i].innerHTML = "<a href=https://wax.bloks.io/account/" + waxAddress[i] + ">" + parseFloat(result["core_liquid_balance"].split(" ")[0]).toFixed(2) + "</a>";
+						document.querySelectorAll('.WAX')[i].innerHTML = parseFloat(result["core_liquid_balance"].split(" ")[0]).toFixed(2);
+						//document.querySelectorAll('.wax-initial')[i].href = 
+						changeColor("span", ".CPU", i, CPU);
+						changeColor("span", ".RAM", i, RAM);
+					}
+					)
+					.catch(error => {
+						console.error('Error:', error);
+					});
+			} catch (e) {
+				console.log(e.message);
+			}
+			try {
+				//await waitFor(1);
+				inventoryCheck(i);
+			} catch (e) {
+				console.log("Inventory: ", e.message);
+			}
+		}
+		document.getElementById('loader').classList.remove('loader');
+	}
+
+	function inventoryCheck(z) {
+		fetch("https://wax.api.atomicassets.io" + '/atomicassets/v1/assets?owner=' + waxAddress[z].trim() + '&page=1&limit=3&order=desc&sort=transferred')
+
+			.then((response) => {
+				return response.json();
+			})
+			.then(result => {
+				web = document.querySelector('#market').value;
+				if (web == "AH") {
+					replacement = "https://wax.atomichub.io/explorer/asset/"
+				} else if (web == "Nefty") {
+					replacement = "https://neftyblocks.com/assets/"
+					console.log(replacement)
+				}
+				for (let i = 0; i < result["data"].length; i++) {
+					let collectionName = result["data"][i]["collection"]["collection_name"];
+					let NFTname = result["data"][i]["name"];
+					let mint = result["data"][i]["template_mint"] || "-";
+					let assetID = result["data"][i]["asset_id"];
+					let textSelect = '.inventory' + (i + 1);
+					//document.querySelectorAll(textSelect)[z].innerHTML = "<a target='_blank' href=https://wax.atomichub.io/explorer/asset/" + assetID + ">" + collectionName + "; " + NFTname + "; #" + mint + "</a>";
+					document.querySelectorAll(textSelect)[z].innerHTML = "<a target='_blank' href=" + replacement + assetID + ">" + collectionName + "; " + NFTname + "; #" + mint + "</a>";
+				}
+			}
+			)
+			.catch(error => {
+				console.error('Error:', error);
+			});
+
+	}
+
+	function autoCheck() {
+		document.getElementById('auto-button').disabled = true;
+		manualCheck();
+		var run = setInterval(manualCheck, 120000);
+	}
+
+	function changeColor(type, classSelect, num, val) {
+		var color = "#8e8e8e";
+
+		if (val >= 90) {
+			color = "red";
+		}
+		document.querySelectorAll(classSelect)[num].parentElement.style.backgroundColor = color;
+	}
+
+	function RPCUpdate(RPC) {
+		try { waxDomain = RPC; } catch (e) { }
+		try { wax.rpc.endpoint = RPC; } catch (e) { }
+	}
+	document.addEventListener('DOMContentLoaded', function () {
+		RPCUpdate(document.getElementById('RPC').value);
+	}, false);
+
+
+	function updateInventory(market) {
+		try {
+			if (market == "AH") {
+				marketnext = "https://wax.atomichub.io/explorer/asset/"
+				marketprev = "https://neftyblocks.com/assets/"
+			} else if (market == "Nefty") {
+				marketprev = "https://wax.atomichub.io/explorer/asset/"
+				marketnext = "https://neftyblocks.com/assets/"
+			}
+			for (let i = 0; i < document.querySelectorAll('a').length; i++) {
+
+				document.querySelectorAll('a')[i].href = document.querySelectorAll('a')[i].href.replace(marketprev, marketnext)
+			}
+		}
+		catch (e) {
+			console.error(e);
+		}
+	}
+
+	function saveAddress() {
+		let data = document.getElementById('wax-bulk').value;
+		localStorage.setItem("wax-bulk", data);
+	}
+	async function waitFor(t) {
+		return new Promise(resolve => setTimeout(() => resolve(), t * 1000));
+	}
+	
+				function darkMode() {
+				let body = document.body;
+				let header = document.getElementsByTagName('header')[0];
+				body.classList.toggle("dark");
+				header.classList.toggle("dark");
+
+			}
+</script>
+
+</html>
